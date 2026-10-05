@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Soil Analytics</title>
+<meta name="description" content="Soil health analysis, fertilizer recommendations and crop suitability for farmers.">
+<meta name="theme-color" content="#204827">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">🌱</span>
+    <span class="brand-name" data-i18n="app_name">AI Soil Analytics</span>
+  </div>
+  <div class="header-actions">
+    <select id="langSelect" class="lang-select" aria-label="Language / भाषा / ಭಾಷೆ">
+      <option value="en">English</option>
+      <option value="hi">हिंदी</option>
+      <option value="kn">ಕನ್ನಡ</option>
+    </select>
+    <button id="installBtn" class="icon-btn hidden" title="Install App" data-i18n-title="install_app">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="offlineBanner" class="offline-banner" data-i18n="offline_banner">You're offline. Showing your last saved results.</div>
+
+<main>
+
+  <!-- ===================== HOME / NEW TEST VIEW ===================== -->
+  <section id="view-home" class="view active" aria-labelledby="homeHeading">
+    <div class="page-intro">
+      <h1 id="homeHeading" data-i18n="home_heading">Enter your soil test values</h1>
+      <p data-i18n="home_sub">Fill in the numbers from your soil test report, or type your best estimate.</p>
+    </div>
+
+    <form id="soilForm" novalidate>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field-group" data-field="nitrogen">
+            <label for="input-nitrogen"><span data-i18n="field_nitrogen">Nitrogen (N)</span></label>
+            <div class="field-row">
+              <input type="number" id="input-nitrogen" name="nitrogen" min="0" max="2000" step="1" inputmode="decimal" placeholder="e.g. 280" required>
+              <span class="field-unit" data-i18n="unit_kgha">kg/ha</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+
+          <div class="field-group" data-field="phosphorus">
+            <label for="input-phosphorus"><span data-i18n="field_phosphorus">Phosphorus (P)</span></label>
+            <div class="field-row">
+              <input type="number" id="input-phosphorus" name="phosphorus" min="0" max="500" step="0.5" inputmode="decimal" placeholder="e.g. 15" required>
+              <span class="field-unit" data-i18n="unit_kgha">kg/ha</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+
+          <div class="field-group" data-field="potassium">
+            <label for="input-potassium"><span data-i18n="field_potassium">Potassium (K)</span></label>
+            <div class="field-row">
+              <input type="number" id="input-potassium" name="potassium" min="0" max="1000" step="1" inputmode="decimal" placeholder="e.g. 180" required>
+              <span class="field-unit" data-i18n="unit_kgha">kg/ha</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+
+          <div class="field-group" data-field="ph">
+            <label for="input-ph"><span data-i18n="field_ph">Soil pH</span></label>
+            <div class="field-row">
+              <input type="number" id="input-ph" name="ph" min="0" max="14" step="0.1" inputmode="decimal" placeholder="e.g. 6.8" required>
+              <span class="field-unit">&nbsp;</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+
+          <div class="field-group" data-field="organicMatter">
+            <label for="input-organicMatter"><span data-i18n="field_organicMatter">Organic Matter</span></label>
+            <div class="field-row">
+              <input type="number" id="input-organicMatter" name="organicMatter" min="0" max="20" step="0.05" inputmode="decimal" placeholder="e.g. 0.6" required>
+              <span class="field-unit" data-i18n="unit_percent">%</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+
+          <div class="field-group" data-field="moisture">
+            <label for="input-moisture"><span data-i18n="field_moisture">Moisture</span></label>
+            <div class="field-row">
+              <input type="number" id="input-moisture" name="moisture" min="0" max="100" step="1" inputmode="decimal" placeholder="e.g. 28" required>
+              <span class="field-unit" data-i18n="unit_percent">%</span>
+            </div>
+            <div class="field-error" data-i18n="err_range">Value out of expected range</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="upload_heading">Add a soil photo (optional)</h3>
+        <p data-i18n="upload_sub">Take or upload a photo of your soil for your records</p>
+        <div class="upload-actions">
+          <button type="button" id="btnCamera" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span data-i18n="upload_camera">Take Photo</span>
+          </button>
+          <button type="button" id="btnGallery" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span data-i18n="upload_gallery">Choose from Gallery</span>
+          </button>
+        </div>
+        <input type="file" id="fileCamera" accept="image/*" capture="environment" class="hidden">
+        <input type="file" id="fileGallery" accept="image/*" class="hidden">
+        <div class="field-error" id="imageError"></div>
+        <div class="image-preview-wrap" id="imagePreviewWrap">
+          <img id="imagePreview" alt="Soil sample preview">
+          <button type="button" class="remove-photo" id="removePhoto" data-i18n="upload_remove">Remove photo</button>
+        </div>
+      </div>
+
+      <button type="submit" id="btnAnalyze" class="btn btn-primary">
+        <span id="analyzeLabel" data-i18n="btn_analyze">Analyze My Soil</span>
+      </button>
+      <div class="btn-row">
+        <button type="button" id="btnResetForm" class="btn btn-ghost" data-i18n="btn_reset">Reset Form</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===================== RESULTS VIEW ===================== -->
+  <section id="view-results" class="view" aria-labelledby="resultsHeading">
+    <div id="resultsEmpty" class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+      <h3 data-i18n="results_empty_title">No analysis yet</h3>
+      <p data-i18n="results_empty_sub">Run a new soil test from the New Test tab to see results here.</p>
+    </div>
+
+    <div id="resultsContent" class="hidden">
+      <div class="page-intro">
+        <h1 id="resultsHeading" data-i18n="results_heading">Your Soil Analysis</h1>
+      </div>
+
+      <!-- Soil health score -->
+      <div class="card">
+        <h3 data-i18n="results_health_title">Soil Health Score</h3>
+        <div class="score-ring-wrap mt-8">
+          <div class="score-ring">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="42" fill="none" stroke="#DADFCB" stroke-width="9"/>
+              <circle id="scoreArc" cx="48" cy="48" r="42" fill="none" stroke="#33633D" stroke-width="9" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/>
+            </svg>
+            <div class="score-value" id="scoreValue">--</div>
+          </div>
+          <div>
+            <div id="scoreRatingBadge" class="score-rating-badge">--</div>
+            <p class="mt-8" id="scoreOutOf" style="margin:6px 0 0;"><span id="scoreNum">0</span> <span data-i18n="score_out_of">out of 100</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parameters -->
+      <div class="card">
+        <h3 data-i18n="results_parameters_title">Soil Parameters</h3>
+        <div class="param-grid" id="paramGrid"></div>
+      </div>
+
+      <!-- Deficiencies / status -->
+      <div class="section-title">
+        <h2 data-i18n="results_deficiency_title">Nutrient & Condition Status</h2>
+      </div>
+      <div id="deficiencyList"></div>
+
+      <!-- Fertilizer recommendations -->
+      <div class="section-title">
+        <h2 data-i18n="results_fertilizer_title">Fertilizer Recommendations</h2>
+      </div>
+      <div id="fertilizerList"></div>
+
+      <!-- Management advice -->
+      <div class="section-title">
+        <h2 data-i18n="results_management_title">Soil Management Advice</h2>
+      </div>
+      <div id="managementList"></div>
+
+      <!-- Suitable crops -->
+      <div class="section-title">
+        <h2 data-i18n="results_crops_title">Suitable Crops for This Soil</h2>
+        <button class="text-link" id="viewAllCropsLink" data-i18n="results_view_all_crops">View all crops</button>
+      </div>
+      <div id="topCropsList"></div>
+
+      <!-- Actions -->
+      <div class="btn-row mt-16">
+        <button id="btnListen" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+          <span id="listenLabel" data-i18n="results_listen">Listen</span>
+        </button>
+        <button id="btnDownloadPdf" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          <span data-i18n="results_download_pdf">Download PDF Report</span>
+        </button>
+      </div>
+      <button id="btnSaveHistory" class="btn btn-primary mt-8" data-i18n="results_save">Save to History</button>
+    </div>
+  </section>
+
+  <!-- ===================== CROPS VIEW ===================== -->
+  <section id="view-crops" class="view" aria-labelledby="cropsHeading">
+    <div class="page-intro">
+      <h1 id="cropsHeading" data-i18n="crops_heading">Crop Suitability Ranking</h1>
+      <p data-i18n="crops_sub">Based on your most recent soil test</p>
+    </div>
+    <div id="cropsEmpty" class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v6M5 12H2M22 12h-3M6.3 6.3L4.2 4.2M17.7 6.3l2.1-2.1M12 22c-4 0-6-2.5-6-6 0-3 2-4 2-8 0-2 1-4 4-4s4 2 4 4c0 4 2 5 2 8 0 3.5-2 6-6 6z"/></svg>
+      <h3 data-i18n="results_empty_title">No analysis yet</h3>
+      <p data-i18n="crops_run_test_first">Run a soil test first to see crop suitability for your field.</p>
+    </div>
+    <div id="allCropsList" class="hidden"></div>
+  </section>
+
+  <!-- ===================== HISTORY VIEW ===================== -->
+  <section id="view-history" class="view" aria-labelledby="historyHeading">
+    <div class="page-intro" style="display:flex;align-items:center;justify-content:space-between;">
+      <h1 id="historyHeading" data-i18n="history_heading">Analysis History</h1>
+    </div>
+    <div id="historyEmpty" class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <h3 data-i18n="history_empty">No saved analyses yet.</h3>
+    </div>
+    <div id="historyList" class="hidden"></div>
+    <button id="btnClearHistory" class="btn btn-danger mt-16 hidden" data-i18n="history_clear">Clear All History</button>
+  </section>
+
+</main>
+
+<nav class="bottom-nav" aria-label="Main navigation">
+  <button class="nav-btn active" data-view="view-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+    <span data-i18n="nav_home">New Test</span>
+  </button>
+  <button class="nav-btn" data-view="view-results">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+    <span data-i18n="nav_results">Results</span>
+  </button>
+  <button class="nav-btn" data-view="view-crops">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6M12 22c-4 0-6-2.5-6-6 0-3 2-4 2-8 0-2 1-4 4-4s4 2 4 4c0 4 2 5 2 8 0 3.5-2 6-6 6z"/></svg>
+    <span data-i18n="nav_crops">Crops</span>
+  </button>
+  <button class="nav-btn" data-view="view-history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span data-i18n="nav_history">History</span>
+  </button>
+</nav>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
